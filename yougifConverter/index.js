@@ -79,12 +79,15 @@ async function handleYouGifRequest(body) {
     cwd: '/tmp'
   });
 
-  const filename = '/tmp' + info._filename.split('.mp4')[0] + '.en.vtt';
-  const newFilename = '/tmp' + uuid + '.vtt';
-  fs.renameSync(filename, newFilename);
+  const filename = '/tmp/' + info._filename.split('.mp4')[0] + '.en.vtt';
+  const newFilename = '/tmp/' + uuid + '.vtt';
+  let hasSubs = fs.existsSync(filename);
+  if (hasSubs) {
+    fs.renameSync(filename, newFilename);
+  }
 
   await new Promise((resolve, reject) => {
-    ffmpeg(info.url)
+    let command = ffmpeg(info.url)
       .setFfmpegPath('/opt/bin/ffmpeg')
       .on('start', function() {
         console.log(`[ffmpeg] Start Processing: ${info.url}`);
@@ -101,7 +104,13 @@ async function handleYouGifRequest(body) {
       .withVideoCodec('libvpx')
       .withVideoBitrate(1024)
       .withAudioCodec('libvorbis')
-      .saveToFile(fileUrl)
+      .saveToFile(fileUrl);
+    
+    if (hasSubs) {
+      command.withOutputOptions("-vf subtitles=" + newFilename);
+    }
+
+    command
   });
 
   console.log(`[ffmpeg] Finished processing. Saved file to: ${fileUrl}`);

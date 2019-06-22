@@ -35,7 +35,7 @@ Parameters:
 Globals:
   Function:
     Runtime: nodejs8.10
-    Timeout: 60
+    Timeout: 120
     Environment:
         Variables:
           DACKBOT_WEBHOOK_ID: !Ref DackbotWebhookId
@@ -80,7 +80,7 @@ Resources:
     Properties:
       CodeUri: yougifConverter/
       Handler: index.handler
-      MemorySize: 2048
+      MemorySize: 3008
       Layers:
         - arn:aws:lambda:us-west-2:523775743690:layer:ffmpeg-native:1
 

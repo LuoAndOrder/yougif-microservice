@@ -28,8 +28,12 @@ async function pollGfycat(gfyname) {
   })
   .then(async (result) => {
     let res = JSON.parse(result);
+
     if (res.task === 'complete') {
       console.log('gfycat processing complete');
+      if (res.md5Found === 1) {
+        gfyname = res.gfyName;
+      }
       let url = `https://gfycat.com/${gfyname}`;
       await discordHook.send(url);
       return ({
