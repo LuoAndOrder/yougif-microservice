@@ -2,9 +2,7 @@ const Gfycat = require('gfycat-sdk');
 const rp = require('request-promise');
 const Discord = require('discord.js');
 
-const discordHook = new Discord.WebhookClient(process.env.DACKBOT_WEBHOOK_ID, process.env.DACKBOT_WEBHOOK_TOKEN);
 const client = new Discord.Client();
-client.login(process.env.DACKBOT_BOT_TOKEN);
 
 let gfycat = new Gfycat({
   clientId: process.env.GFYCAT_CLIENT_ID,
@@ -41,7 +39,7 @@ async function pollGfycat(gfyname, channelId) {
         gfyname = res.gfyName;
       }
       let url = `https://gfycat.com/${gfyname}`;
-      await sendMessage(url);
+      await sendMessage(channelId, url);
       return ({
         statusCode: 200,
         body: url
@@ -53,6 +51,18 @@ async function pollGfycat(gfyname, channelId) {
 }
 
 exports.handler = async (event, context) => {
+  if (client.status != 0) {
+    await client.login(process.env.DACKBOT_BOT_TOKEN);
+    let retries = 0;
+    while (client.status != 0 && retries <= 5) {
+      setTimeout(() => { }, 50);
+      retries++;
+    }
+    if (client.status != 0) {
+      throw Error("Failed to connect");
+    }
+  }
+
   let input = JSON.parse(event.body);
   console.log(`Input Event: ${JSON.stringify(event)}`);
   if (!input.gfyname || !input.channelId) {
