@@ -15,7 +15,7 @@ Globals:
         GFYCAT_CLIENT_SECRET:
           Ref: GfycatClientSecret
     Runtime: nodejs8.10
-    Timeout: 60
+    Timeout: 120
 Outputs:
   GfycatPollerFunctionArrn:
     Description: Gfycat Poller Function ARN
@@ -53,7 +53,7 @@ Parameters:
 Resources:
   GfycatPollerFunction:
     Properties:
-      CodeUri: s3://kwluo-sam/104981af1634c1a8e6deb1b0cdd5441e
+      CodeUri: s3://kwluo-sam/1356b6d18be67e2caa80764f044c3df2
       Handler: index.handler
       MemorySize: 256
     Type: AWS::Serverless::Function
@@ -91,11 +91,11 @@ Resources:
     Type: AWS::IAM::Role
   YouGifConverterFunction:
     Properties:
-      CodeUri: s3://kwluo-sam/f6cf09646617a7f5920254f01893bdd8
+      CodeUri: s3://kwluo-sam/65befb8962a78fe8955b2d391f83209a
       Handler: index.handler
       Layers:
       - arn:aws:lambda:us-west-2:523775743690:layer:ffmpeg-native:1
-      MemorySize: 2048
+      MemorySize: 3008
     Type: AWS::Serverless::Function
   YouGifStepFunctionStateMachine:
     Properties:
@@ -119,7 +119,7 @@ Resources:
     Type: AWS::StepFunctions::StateMachine
   YouGifStepInvokerFunction:
     Properties:
-      CodeUri: s3://kwluo-sam/858c433067923370b7656fc642b2132d
+      CodeUri: s3://kwluo-sam/ddbcb7ca2f0319f546a4f81d8034d543
       Environment:
         Variables:
           STEPFUNCTION_ARN:
