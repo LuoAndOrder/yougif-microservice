@@ -8,7 +8,7 @@ const Discord = require('discord.js');
 const { promisify } = require('util');
 
 const discordHook = new Discord.WebhookClient(process.env.DACKBOT_WEBHOOK_ID, process.env.DACKBOT_WEBHOOK_TOKEN);
-const client = new Discord.client();
+const client = new Discord.Client();
 client.login(process.env.DACKBOT_BOT_TOKEN);
 
 let gfycat = new Gfycat({
