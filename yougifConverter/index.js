@@ -7,9 +7,7 @@ const fs = require('fs');
 const Discord = require('discord.js');
 const { promisify } = require('util');
 
-const discordHook = new Discord.WebhookClient(process.env.DACKBOT_WEBHOOK_ID, process.env.DACKBOT_WEBHOOK_TOKEN);
-const client = new Discord.Client();
-client.login(process.env.DACKBOT_BOT_TOKEN);
+let client = new Discord.Client();
 
 let gfycat = new Gfycat({
   clientId: process.env.GFYCAT_CLIENT_ID,
@@ -17,33 +15,33 @@ let gfycat = new Gfycat({
 });
 
 async function getGfyname(title) {
-  const headers = {Authorization: gfycat.token};
+  const headers = { Authorization: gfycat.token };
   return await rp({
     uri: 'https://api.gfycat.com/v1/gfycats',
-      json: true,
-      method: 'POST',
-      headers,
-      body: {title},
+    json: true,
+    method: 'POST',
+    headers,
+    body: { title },
   })
-  .then(async ({gfyname, secret}) => {
-    console.log(`gfyname: ${gfyname} secret: ${secret}`);
-    return gfyname;
-  });
+    .then(async ({ gfyname, secret }) => {
+      console.log(`gfyname: ${gfyname} secret: ${secret}`);
+      return gfyname;
+    });
 }
 
 async function uploadGfycat(fileUrl, gfyname) {
   await rp({
     uri: 'https://filedrop.gfycat.com',
-      json: true,
-      method: 'POST',
-      formData: {
-        key: gfyname,
-        file: fs.createReadStream(fileUrl),
-      },
+    json: true,
+    method: 'POST',
+    formData: {
+      key: gfyname,
+      file: fs.createReadStream(fileUrl),
+    },
   })
-  .then(() => {
-    console.log("Uploaded to gfycat.");
-  });
+    .then(() => {
+      console.log("Uploaded to gfycat.");
+    });
 }
 
 async function sendMessage(channelId, msg) {
@@ -51,15 +49,15 @@ async function sendMessage(channelId, msg) {
 }
 
 async function handleError(err, channelId) {
-  await sendMessage(`Human, I failed: ${err.message}`);
+  await sendMessage(channelId, `Human, I failed: ${err.message}`);
   console.error(err.message);
   throw err;
 }
 
 async function handleYouGifRequest(body) {
-  let {url, startTime, duration, channelId} = body;
+  let { url, startTime, duration, channelId } = body;
   console.log(`url: ${url} startTime: ${startTime} duration: ${duration} channelId: ${channelId}`);
-  await sendMessage('Beep boop, I am processing...');
+  await sendMessage(channelId, 'Beep boop, I am processing...');
 
   await gfycat.authenticate()
     .then(res => {
@@ -73,7 +71,7 @@ async function handleYouGifRequest(body) {
 
   let uuid = uuidv4();
   let fileUrl = `/tmp/${uuid}.webm`;
-  
+
   let ytOptions = ['-f 22/43/18', '--get-url'];
   const ytdlGetInfo = promisify(ytdl.getInfo);
   let info = await ytdlGetInfo(url, ytOptions);
@@ -96,13 +94,13 @@ async function handleYouGifRequest(body) {
   await new Promise((resolve, reject) => {
     let command = ffmpeg(info.url)
       .setFfmpegPath('/opt/bin/ffmpeg')
-      .on('start', function() {
+      .on('start', function () {
         console.log(`[ffmpeg] Start Processing: ${info.url}`);
       })
-      .on('error', function(err) {
+      .on('error', function (err) {
         reject(err);
       })
-      .on('end', function() {
+      .on('end', function () {
         resolve();
       })
       .format('webm')
@@ -112,7 +110,7 @@ async function handleYouGifRequest(body) {
       .withVideoBitrate(1024)
       .withAudioCodec('libvorbis')
       .saveToFile(fileUrl);
-    
+
     if (hasSubs) {
       command.withOutputOptions("-vf subtitles=" + newFilename);
     }
@@ -123,7 +121,7 @@ async function handleYouGifRequest(body) {
   console.log(`[ffmpeg] Finished processing. Saved file to: ${fileUrl}`);
 
   // Upload to gfycat
-  let gfyname; 
+  let gfyname;
   try {
     gfyname = await getGfyname(info.title);
     await uploadGfycat(fileUrl, gfyname);
@@ -142,7 +140,19 @@ async function handleYouGifRequest(body) {
 
 exports.handler = async (event, context) => {
   console.log(event);
-  const {channelId} = event;
+  if (client.status != 0) {
+    await client.login(process.env.DACKBOT_BOT_TOKEN);
+    let retries = 0;
+    while (client.status != 0 && retries <= 5) {
+      setTimeout(() => { }, 50);
+      retries++;
+    }
+    if (client.status != 0) {
+      throw Error("Failed to connect");
+    }
+  }
+
+  const { channelId } = event;
   try {
     return await handleYouGifRequest(event);
   } catch (err) {
