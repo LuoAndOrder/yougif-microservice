@@ -51,7 +51,7 @@ async function sendMessage(channelId, msg) {
 }
 
 async function handleError(err, channelId) {
-  await sendMessage(channelId).send(`Human, I failed: ${err.message}`);
+  await sendMessage(`Human, I failed: ${err.message}`);
   console.error(err.message);
   throw err;
 }
