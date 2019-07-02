@@ -58,6 +58,7 @@ async function handleError(err, channelId) {
 
 async function handleYouGifRequest(body) {
   let {url, startTime, duration, channelId} = body;
+  console.log(`url: ${url} startTime: ${startTime} duration: ${duration} channelId: ${channelId}`);
   await sendMessage('Beep boop, I am processing...');
 
   await gfycat.authenticate()
