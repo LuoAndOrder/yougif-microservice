@@ -3,13 +3,19 @@ const rp = require('request-promise');
 const Discord = require('discord.js');
 
 const discordHook = new Discord.WebhookClient(process.env.DACKBOT_WEBHOOK_ID, process.env.DACKBOT_WEBHOOK_TOKEN);
+const client = new Discord.Client();
+client.login(process.env.DACKBOT_BOT_TOKEN);
 
 let gfycat = new Gfycat({
   clientId: process.env.GFYCAT_CLIENT_ID,
   clientSecret: process.env.GFYCAT_CLIENT_SECRET
 });
 
-async function pollGfycat(gfyname) {
+async function sendMessage(channelId, msg) {
+  await client.channels.get(channelId).send(msg);
+}
+
+async function pollGfycat(gfyname, channelId) {
   await gfycat.authenticate()
   .then(res => {
     console.log(res.access_token);
@@ -31,7 +37,7 @@ async function pollGfycat(gfyname) {
     if (res.task === 'complete') {
       console.log('gfycat processing complete');
       let url = `https://gfycat.com/${gfyname}`;
-      await discordHook.send(url);
+      await sendMessage(url);
       return ({
         statusCode: 200,
         body: url
@@ -45,9 +51,9 @@ async function pollGfycat(gfyname) {
 exports.handler = async (event, context) => {
   let input = JSON.parse(event.body);
   console.log(`Input Event: ${JSON.stringify(event)}`);
-  if (!input.gfyname) {
+  if (!input.gfyname || !input.channelId) {
     throw Error("Bad input: " + JSON.stringify(event));
   }
 
-  return await pollGfycat(input.gfyname);
+  return await pollGfycat(input.gfyname, input.channelId);
 };

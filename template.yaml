@@ -14,6 +14,11 @@ Parameters:
     Default: 'putyourshere'
     Description: Webhook token for sending messages to discord
 
+  DackbotBotToken:
+    Type: String
+    Default: 'putyourshere'
+    Description: Discord API token for sending messages to discord
+
   GfycatClientId:
     Type: String
     Default: 'putyourshere'
@@ -40,6 +45,7 @@ Globals:
         Variables:
           DACKBOT_WEBHOOK_ID: !Ref DackbotWebhookId
           DACKBOT_WEBHOOK_TOKEN: !Ref DackbotWebhookToken
+          DACKBOT_BOT_TOKEN: !Ref DackbotBotToken
           GFYCAT_CLIENT_ID: !Ref GfycatClientId
           GFYCAT_CLIENT_SECRET: !Ref GfycatClientSecret
 

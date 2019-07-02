@@ -5,7 +5,7 @@ AWS.config.update({ region: process.env.AWS_REGION });
 exports.handler = async (event, context) => {
   console.log(event.queryStringParameters);
 
-  let { url, startTime, duration } = event.queryStringParameters;
+  let { url, startTime, duration, channelId } = event.queryStringParameters;
   if (!url) {
     return ({
       statusCode: 400,
@@ -16,7 +16,7 @@ exports.handler = async (event, context) => {
   startTime = startTime ? startTime : '00:00:00';
   duration = duration ? duration : 10;
 
-  console.log(`url: ${url} startTime: ${startTime} duration: ${duration}`);
+  console.log(`url: ${url} startTime: ${startTime} duration: ${duration} channelId: ${channelId}`);
 
   console.log(`stateMachine: ${process.env.STEPFUNCTION_ARN}`);
 
@@ -25,7 +25,8 @@ exports.handler = async (event, context) => {
     input: JSON.stringify({
       url: url,
       startTime: startTime,
-      duration: duration
+      duration: duration,
+      channelId: channelId
     })
   };
 

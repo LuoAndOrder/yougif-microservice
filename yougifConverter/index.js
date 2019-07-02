@@ -8,6 +8,8 @@ const Discord = require('discord.js');
 const { promisify } = require('util');
 
 const discordHook = new Discord.WebhookClient(process.env.DACKBOT_WEBHOOK_ID, process.env.DACKBOT_WEBHOOK_TOKEN);
+const client = new Discord.client();
+client.login(process.env.DACKBOT_BOT_TOKEN);
 
 let gfycat = new Gfycat({
   clientId: process.env.GFYCAT_CLIENT_ID,
@@ -44,15 +46,19 @@ async function uploadGfycat(fileUrl, gfyname) {
   });
 }
 
-async function handleError(err) {
-  await discordHook.send('Human, I failed: ' + err.message);
+async function sendMessage(channelId, msg) {
+  await client.channels.get(channelId).send(msg);
+}
+
+async function handleError(err, channelId) {
+  await sendMessage(channelId).send(`Human, I failed: ${err.message}`);
   console.error(err.message);
   throw err;
 }
 
 async function handleYouGifRequest(body) {
-  let {url, startTime, duration} = body;
-  await discordHook.send('Beep boop, I am processing...');
+  let {url, startTime, duration, channelId} = body;
+  await sendMessage('Beep boop, I am processing...');
 
   await gfycat.authenticate()
     .then(res => {
@@ -112,23 +118,25 @@ async function handleYouGifRequest(body) {
     gfyname = await getGfyname(info.title);
     await uploadGfycat(fileUrl, gfyname);
   } catch (err) {
-    return await handleError(err);
+    return await handleError(err, channelId);
   }
 
   return ({
     statusCode: 200,
     body: JSON.stringify({
-      gfyname: gfyname
+      gfyname: gfyname,
+      channelId: channelId
     })
   });
 }
 
 exports.handler = async (event, context) => {
   console.log(event);
+  const {channelId} = event;
   try {
     return await handleYouGifRequest(event);
   } catch (err) {
     console.log(err);
-    return await handleError(err);
+    return await handleError(err, channelId);
   }
 };
