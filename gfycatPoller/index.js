@@ -10,6 +10,13 @@ let gfycat = new Gfycat({
 });
 
 async function sendMessage(channelId, msg) {
+  console.log(`[sendMessage] channelId: ${channelId} msg: ${msg}`);
+  let channel = client.channels.get(channelId);
+  if (!channel) {
+    console.log(`[sendMessage] channel not found! ${channelId}`);
+    console.log(JSON.stringify(client.channels));
+    console.log(`Client Status: ${client.status}`);
+  }
   await client.channels.get(channelId).send(msg);
 }
 
@@ -52,9 +59,11 @@ async function pollGfycat(gfyname, channelId) {
 
 exports.handler = async (event, context) => {
   if (client.status != 0) {
+    console.log("Discord client needs to be initialized. Logging in...");
     await client.login(process.env.DACKBOT_BOT_TOKEN);
     let retries = 0;
-    while (client.status != 0 && retries <= 5) {
+    while (client.status != 0 && client.channels.size == 0 && retries <= 20) {
+      console.log(`Waiting for discord client to initialize. Retry: ${retries}`);
       setTimeout(() => { }, 50);
       retries++;
     }
