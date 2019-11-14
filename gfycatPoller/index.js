@@ -9,7 +9,7 @@ let gfycat = new Gfycat({
   clientSecret: process.env.GFYCAT_CLIENT_SECRET
 });
 
-async function sendMessage(channelId, msg) {
+async function sendMessage(channelId, msg, msgId) {
   console.log(`[sendMessage] channelId: ${channelId} msg: ${msg}`);
   let channel = client.channels.get(channelId);
   if (!channel) {
@@ -17,10 +17,10 @@ async function sendMessage(channelId, msg) {
     console.log(JSON.stringify(client.channels));
     console.log(`Client Status: ${client.status}`);
   }
-  await client.channels.get(channelId).send(msg);
+  await client.channels.get(channelId).fetchMessage(msgId).edit(msg);
 }
 
-async function pollGfycat(gfyname, channelId) {
+async function pollGfycat(gfyname, channelId, msgId) {
   await gfycat.authenticate()
   .then(res => {
     console.log(res.access_token);
@@ -46,7 +46,7 @@ async function pollGfycat(gfyname, channelId) {
         gfyname = res.gfyName;
       }
       let url = `https://gfycat.com/${gfyname}`;
-      await sendMessage(channelId, url);
+      await sendMessage(channelId, url, msgId);
       return ({
         statusCode: 200,
         body: url
@@ -74,9 +74,9 @@ exports.handler = async (event, context) => {
 
   let input = JSON.parse(event.body);
   console.log(`Input Event: ${JSON.stringify(event)}`);
-  if (!input.gfyname || !input.channelId) {
+  if (!input.gfyname || !input.channelId || !input.msgId) {
     throw Error("Bad input: " + JSON.stringify(event));
   }
 
-  return await pollGfycat(input.gfyname, input.channelId);
+  return await pollGfycat(input.gfyname, input.channelId, input.msgId);
 };

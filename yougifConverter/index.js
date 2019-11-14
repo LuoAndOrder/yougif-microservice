@@ -52,7 +52,8 @@ async function sendMessage(channelId, msg) {
     console.log(JSON.stringify(client.channels));
     console.log(`Client Status: ${client.status}`);
   }
-  await client.channels.get(channelId).send(msg);
+  var msg = await client.channels.get(channelId).send(msg);
+  return msg.id;
 }
 
 async function handleError(err, channelId) {
@@ -64,7 +65,7 @@ async function handleError(err, channelId) {
 async function handleYouGifRequest(body) {
   let { url, startTime, duration, channelId } = body;
   console.log(`url: ${url} startTime: ${startTime} duration: ${duration} channelId: ${channelId}`);
-  await sendMessage(channelId, 'Beep boop, I am processing...');
+  var msgId = await sendMessage(channelId, 'Beep boop, I am processing...');
 
   await gfycat.authenticate()
     .then(res => {
@@ -140,7 +141,8 @@ async function handleYouGifRequest(body) {
     statusCode: 200,
     body: JSON.stringify({
       gfyname: gfyname,
-      channelId: channelId
+      channelId: channelId,
+      msgId: msgId
     })
   });
 }

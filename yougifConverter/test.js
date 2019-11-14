@@ -4,19 +4,19 @@ const ffmpeg = require('fluent-ffmpeg');
 const uuidv4 = require('uuid/v4');
 const fs = require('fs');
 
-const url = 'https://www.youtube.com/watch?v=myh94hpFmJY';
+const url = 'https://www.youtube.com/watch?v=Jj3_R8nwy5Q';
 
 const getSubs = async (url) => {
     const getInfo = promisify(ytdl.getInfo);
-    let ytOptions = ['-f 22/43/18', '--get-url'];
+    let ytOptions = ['-f worst', '--get-url'];
     const info = await getInfo(url, ytOptions);
     
     const getSub = promisify(ytdl.getSubs);
-    await getSub(url, {
-    auto: true,
-    format: 'srt',
-    lang: 'en'
-    });
+    // await getSub(url, {
+    // auto: true,
+    // format: 'srt',
+    // lang: 'en'
+    // });
 
     const filename = info._filename.split('.mp4')[0] + '.en.vtt';
     const newFilename = uuidv4() + '.vtt';
@@ -34,10 +34,12 @@ const getSubs = async (url) => {
             console.log('error: ' + err.message);
             reject(err);
         })
+        .on('progress', console.log)
+        .on('stderr', console.log)
         .on('end', function() { resolve() })
         .format('webm')
-        .seekInput('00:00:00')
-        .duration(10)
+        .seekInput('00:14:48')
+        .duration(30)
         .withVideoCodec('libvpx')
         .withVideoBitrate(1024)
         .withAudioCodec('libvorbis')
