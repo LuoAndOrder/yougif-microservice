@@ -17,7 +17,8 @@ async function sendMessage(channelId, msg, msgId) {
     console.log(JSON.stringify(client.channels));
     console.log(`Client Status: ${client.status}`);
   }
-  await client.channels.get(channelId).fetchMessage(msgId).edit(msg);
+  var message = await client.channels.get(channelId).fetchMessage(msgId);
+  await message.edit(msg);
 }
 
 async function pollGfycat(gfyname, channelId, msgId) {

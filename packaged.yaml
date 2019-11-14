@@ -59,7 +59,7 @@ Parameters:
 Resources:
   GfycatPollerFunction:
     Properties:
-      CodeUri: s3://kwluo-sam/083d3d21bae548f93d94e85dddbaf5b4
+      CodeUri: s3://kwluo-sam/a2f4df5af127dfded02e12c7b1e0a412
       Handler: index.handler
       MemorySize: 256
     Type: AWS::Serverless::Function
@@ -97,7 +97,7 @@ Resources:
     Type: AWS::IAM::Role
   YouGifConverterFunction:
     Properties:
-      CodeUri: s3://kwluo-sam/659a9b63c6a023c10cf8dd5781c6d378
+      CodeUri: s3://kwluo-sam/ea42dcd5272845c7641d22dd7a9ea1e8
       Handler: index.handler
       Layers:
       - arn:aws:lambda:us-west-2:523775743690:layer:ffmpeg-native:1
@@ -125,7 +125,7 @@ Resources:
     Type: AWS::StepFunctions::StateMachine
   YouGifStepInvokerFunction:
     Properties:
-      CodeUri: s3://kwluo-sam/4b125d4587cf82c56722032793240b57
+      CodeUri: s3://kwluo-sam/6e6cb00010b5e5de45b8b7c6ec1707b2
       Environment:
         Variables:
           STEPFUNCTION_ARN:
