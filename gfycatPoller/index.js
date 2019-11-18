@@ -1,6 +1,7 @@
 const Gfycat = require('gfycat-sdk');
 const rp = require('request-promise');
 const Discord = require('discord.js');
+const AWS = require('aws-sdk');
 
 const client = new Discord.Client();
 
@@ -8,6 +9,8 @@ let gfycat = new Gfycat({
   clientId: process.env.GFYCAT_CLIENT_ID,
   clientSecret: process.env.GFYCAT_CLIENT_SECRET
 });
+
+const ddb = new AWS.DynamoDB.DocumentClient();
 
 async function sendMessage(channelId, msg, msgId) {
   console.log(`[sendMessage] channelId: ${channelId} msg: ${msg}`);
@@ -17,6 +20,7 @@ async function sendMessage(channelId, msg, msgId) {
     console.log(JSON.stringify(client.channels));
     console.log(`Client Status: ${client.status}`);
   }
+  
   var message = await client.channels.get(channelId).fetchMessage(msgId);
   await message.edit(msg);
 }
@@ -79,5 +83,15 @@ exports.handler = async (event, context) => {
     throw Error("Bad input: " + JSON.stringify(event));
   }
 
-  return await pollGfycat(input.gfyname, input.channelId, input.msgId);
+  let result = await pollGfycat(input.gfyname, input.channelId, input.msgId);
+  var cacheKey = [input.url, input.startTime, input.duration].join(':');
+  var params = {
+    TableName: process.env.CACHE_TABLE,
+    Item: {
+      HashKey: cacheKey,
+      gfyUrl: result.body
+    }
+  };
+  await ddb.put(params).promise();
+  return result;
 };
