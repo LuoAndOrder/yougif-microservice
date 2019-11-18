@@ -84,7 +84,7 @@ exports.handler = async (event, context) => {
   }
 
   let result = await pollGfycat(input.gfyname, input.channelId, input.msgId);
-  var cacheKey = [input.url, input.startTime, input.duration].join(':');
+  var cacheKey = [event.url, event.startTime, event.duration].join(':');
   var params = {
     TableName: process.env.CACHE_TABLE,
     Item: {
