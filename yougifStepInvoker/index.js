@@ -2,10 +2,38 @@ const AWS = require('aws-sdk');
 const { promisify } = require('util');
 AWS.config.update({ region: process.env.AWS_REGION });
 
+const Discord = require('discord.js');
+
+let client = new Discord.Client();
 var ddb;
+
+async function sendMessage(channelId, msg) {
+  console.log(`[sendMessage] channelId: ${channelId} msg: ${msg}`);
+  let channel = client.channels.get(channelId);
+  if (!channel) {
+    console.log(`[sendMessage] channel not found! ${channelId}`);
+    console.log(JSON.stringify(client.channels));
+    console.log(`Client Status: ${client.status}`);
+  }
+  var msg = await client.channels.get(channelId).send(msg);
+  return msg.id;
+}
 
 exports.handler = async (event, context) => {
   console.log(event.queryStringParameters);
+  if (client.status != 0) {
+    console.log("Discord client needs to be initialized. Logging in...");
+    await client.login(process.env.DACKBOT_BOT_TOKEN);
+    let retries = 0;
+    while (client.status != 0 && client.channels.size == 0 && retries <= 20) {
+      console.log(`Waiting for discord client to initialize. Retry: ${retries}`);
+      setTimeout(() => { }, 50);
+      retries++;
+    }
+    if (client.status != 0) {
+      throw Error("Failed to connect");
+    }
+  }
 
   let { url, startTime, duration, channelId } = event.queryStringParameters;
   if (!url) {
@@ -40,7 +68,8 @@ exports.handler = async (event, context) => {
     cacheResult = null;
   }
 
-  if (cacheResult) {
+  if (cacheResult.Item) {
+    await sendMessage(channelId, cacheResult.Item.gfyUrl);
     return({
       statusCode: 200,
       body: cacheResult.Item.gfyUrl
