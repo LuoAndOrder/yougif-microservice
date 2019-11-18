@@ -23,20 +23,9 @@ exports.handler = async (event, context) => {
   console.log(`url: ${url} startTime: ${startTime} duration: ${duration} channelId: ${channelId}`);
 
   console.log(`stateMachine: ${process.env.STEPFUNCTION_ARN}`);
-
-  let params = {
-    stateMachineArn: process.env.STEPFUNCTION_ARN,
-    input: JSON.stringify({
-      url: url,
-      startTime: startTime,
-      duration: duration,
-      channelId: channelId
-    })
-  };
-
   // First check if we've processed this video before
   const keyName = [url, startTime, duration].join(':');
-  var params = {
+  let getParams = {
     TableName: process.env.CACHE_TABLE,
     Key: {
       HashKey: keyName
@@ -44,7 +33,7 @@ exports.handler = async (event, context) => {
   };
 
   try {
-    var cacheResult = await ddb.get(params).promise();
+    var cacheResult = await ddb.get(getParams).promise();
   } catch (err) {
     console.log(err);
     cacheResult = null;
@@ -56,6 +45,16 @@ exports.handler = async (event, context) => {
       body: cacheResult.Item.gfyUrl
     });
   }
+
+  let params = {
+    stateMachineArn: process.env.STEPFUNCTION_ARN,
+    input: JSON.stringify({
+      url: url,
+      startTime: startTime,
+      duration: duration,
+      channelId: channelId
+    })
+  };
 
   let sf = new AWS.StepFunctions();
   try {
