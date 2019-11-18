@@ -28,12 +28,13 @@ exports.handler = async (event, context) => {
   let getParams = {
     TableName: process.env.CACHE_TABLE,
     Key: {
-      HashKey: keyName
+      args: keyName
     }
   };
 
   try {
     var cacheResult = await ddb.get(getParams).promise();
+    console.log(cacheResult);
   } catch (err) {
     console.log(err);
     cacheResult = null;

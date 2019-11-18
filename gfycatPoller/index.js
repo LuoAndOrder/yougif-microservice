@@ -20,7 +20,7 @@ async function sendMessage(channelId, msg, msgId) {
     console.log(JSON.stringify(client.channels));
     console.log(`Client Status: ${client.status}`);
   }
-  
+
   var message = await client.channels.get(channelId).fetchMessage(msgId);
   await message.edit(msg);
 }
@@ -88,7 +88,7 @@ exports.handler = async (event, context) => {
   var params = {
     TableName: process.env.CACHE_TABLE,
     Item: {
-      HashKey: cacheKey,
+      args: cacheKey,
       gfyUrl: result.body
     }
   };
