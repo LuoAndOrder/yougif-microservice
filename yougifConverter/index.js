@@ -142,7 +142,10 @@ async function handleYouGifRequest(body) {
     body: JSON.stringify({
       gfyname: gfyname,
       channelId: channelId,
-      msgId: msgId
+      msgId: msgId,
+      url: url,
+      startTime: startTime,
+      duration: duration
     })
   });
 }

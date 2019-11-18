@@ -84,7 +84,7 @@ exports.handler = async (event, context) => {
   }
 
   let result = await pollGfycat(input.gfyname, input.channelId, input.msgId);
-  var cacheKey = [event.url, event.startTime, event.duration].join(':');
+  var cacheKey = [input.url, input.startTime, input.duration].join(':');
   var params = {
     TableName: process.env.CACHE_TABLE,
     Item: {
@@ -92,6 +92,7 @@ exports.handler = async (event, context) => {
       gfyUrl: result.body
     }
   };
+  console.log("Putting cache: " + params);
   await ddb.put(params).promise();
   return result;
 };
